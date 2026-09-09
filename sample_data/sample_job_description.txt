@@ -1,0 +1,5 @@
+We are hiring a Python Backend Developer.
+Required skills: Python, FastAPI, SQL, Git, Docker, AWS.
+Preferred: React, Machine Learning.
+Education: Bachelor's degree in Computer Science or related field.
+Experience: 2+ years of software development experience.

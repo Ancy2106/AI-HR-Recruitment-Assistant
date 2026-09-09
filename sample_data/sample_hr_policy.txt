@@ -1,0 +1,9 @@
+HR Recruitment Policy - Demonstration
+
+1. Candidates should be evaluated against published job requirements using job-related evidence only.
+2. Recruiters should see matched skills, missing skills, experience evidence, and recommendation reasons.
+3. AI output is decision support only. A qualified recruiter must review the candidate before any hiring decision.
+4. Do not use protected characteristics or unrelated personal attributes in candidate scoring or recommendations.
+5. Interview questions must be relevant to the role and must not target protected characteristics.
+6. If the resume does not provide evidence, mark it unknown or missing rather than inventing evidence.
+7. The final hiring decision belongs to a human recruiter.
