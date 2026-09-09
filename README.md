@@ -1,5 +1,3 @@
-You're right. You want **only the raw README content**, ready to copy directly into `README.md` — no explanation outside it.
-
 # AI HR Recruitment Assistant 🧑‍💼
 
 ### Agentic AI-Powered Recruitment Decision Support System
