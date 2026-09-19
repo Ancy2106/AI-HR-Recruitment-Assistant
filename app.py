@@ -2693,6 +2693,29 @@ QUESTION:
     return answer, context
 
 
+def clean_ai_response(response):
+    """Extract readable text from Ollama or Gemini responses."""
+
+    content = response.content
+
+    if isinstance(content, str):
+        return content
+
+    if isinstance(content, list):
+        text_parts = []
+
+        for item in content:
+            if isinstance(item, dict):
+                if item.get("type") == "text":
+                    text_parts.append(item.get("text", ""))
+            elif isinstance(item, str):
+                text_parts.append(item)
+
+        return "\n".join(text_parts).strip()
+
+    return str(content)
+
+
 # ============================================================
 # APPLICATION HEADER
 # ============================================================
@@ -3116,28 +3139,6 @@ with tabs[0]:
         )
 
         ai_col1, ai_col2 = st.columns(2)
-
-        def clean_ai_response(response):
-            """Extract readable text from Ollama or Gemini responses."""
-
-            content = response.content
-
-            if isinstance(content, str):
-                return content
-
-            if isinstance(content, list):
-                text_parts = []
-
-                for item in content:
-                    if isinstance(item, dict):
-                        if item.get("type") == "text":
-                            text_parts.append(item.get("text", ""))
-                    elif isinstance(item, str):
-                        text_parts.append(item)
-
-                return "\n".join(text_parts).strip()
-
-            return str(content)
 
         # ----------------------------------------------------
         # AI SUMMARY
