@@ -10,6 +10,10 @@ from langchain.agents import create_agent
 from langchain.tools import tool
 from langchain_core.vectorstores import InMemoryVectorStore
 from langchain_ollama import ChatOllama, OllamaEmbeddings
+from langchain_google_genai import ChatGoogleGenerativeAI, GoogleGenerativeAIEmbeddings
+
+import base64
+from pathlib import Path
 
 
 # ============================================================
@@ -22,470 +26,2057 @@ st.set_page_config(
     layout="wide"
 )
 
+
+HEADER_IMAGE = Path(__file__).parent / "assets" / "hr_header_bg.png"
+
+if HEADER_IMAGE.exists():
+    with open(HEADER_IMAGE, "rb") as image_file:
+        HEADER_IMAGE_BASE64 = base64.b64encode(
+            image_file.read()
+        ).decode("utf-8")
+else:
+    HEADER_IMAGE_BASE64 = ""
+
+
+BACKGROUND_IMAGE = Path(__file__).parent / "assets" / "hr_background.png"
+
+if BACKGROUND_IMAGE.exists():
+    with open(BACKGROUND_IMAGE, "rb") as image_file:
+        BACKGROUND_IMAGE_BASE64 = base64.b64encode(
+            image_file.read()
+        ).decode("utf-8")
+else:
+    BACKGROUND_IMAGE_BASE64 = ""
+
 # ============================================================
-# 🎨 MODERN HR RECRUITMENT DASHBOARD CSS
+# 🎨 PROFESSIONAL AI HR RECRUITMENT DASHBOARD CSS
 # ============================================================
 
 st.markdown("""
 <style>
 
 /* ============================================================
-   GLOBAL
+   DESIGN SYSTEM
    ============================================================ */
+:root {
+    --navy: #0b1220;
+    --navy-2: #111b31;
+    --indigo: #4f46e5;
+    --blue: #2563eb;
+    --violet: #7c3aed;
+    --text: #0f172a;
+    --muted: #64748b;
+    --line: #dbe3ef;
+    --surface: #ffffff;
+    --surface-2: #f1f5f9;
+}
 
 html, body, [class*="css"] {
     font-family: Arial, Helvetica, sans-serif;
 }
 
 .stApp {
-    background:
-        radial-gradient(
-            circle at 5% 5%,
-            rgba(99, 102, 241, 0.08),
-            transparent 25%
+    background-image:
+        linear-gradient(
+           rgba(20, 35, 100, 0.20),
+           rgba(235, 240, 255, 0.30)
         ),
-        radial-gradient(
-            circle at 95% 10%,
-            rgba(37, 99, 235, 0.07),
-            transparent 25%
-        ),
-        #f7f8fc;
+        url("data:image/png;base64,""" + BACKGROUND_IMAGE_BASE64 + """");
+
+    background-size: cover;
+
+    background-position: center top;
+
+    background-repeat: no-repeat;
+
+    background-attachment: fixed;
+
+    color: var(--text);
 }
 
 
-/* ============================================================
-   HERO HEADER
-   ============================================================ */
+/* Make the main workspace feel like a designed dashboard */
+.main .block-container {
+    position: relative;
+    z-index: 1;
+}
 
-.hero {
-    background: linear-gradient(
-        135deg,
-        #312e81,
-        #4f46e5,
-        #2563eb
-    );
+/* Give the content workspace a subtle glass effect */
+.main .block-container::before {
+    content: "";
+    position: fixed;
+    z-index: -1;
 
-    color: white;
+    left: 4%;
+    right: 4%;
+    top: 120px;
+    bottom: 0;
 
-    padding: 32px 36px;
+    pointer-events: none;
 
-    border-radius: 24px;
+    background: rgba(255, 255, 255, 0.18);
 
-    margin-bottom: 28px;
+    border-radius: 40px;
 
     box-shadow:
-        0 15px 40px rgba(49, 46, 129, 0.22);
+        inset 0 0 80px rgba(99, 102, 241, 0.025);
+}
+
+/* ============================================================
+   HERO / PRODUCT HEADER
+   ============================================================ */
+.hero {
+    position: relative;
+    overflow: hidden;
+    min-height: 205px;
+    padding: 32px 38px 30px;
+    margin-bottom: 24px;
+    border-radius: 26px;
+    color: #fff;
+    background:
+        radial-gradient(circle at 92% 8%, rgba(255,255,255,.18), transparent 18%),
+        radial-gradient(circle at 72% 115%, rgba(124,58,237,.42), transparent 30%),
+        linear-gradient(135deg, #0b1220 0%, #172554 42%, #4338ca 74%, #2563eb 100%);
+    box-shadow: 0 24px 55px rgba(30,41,59,.24);
+}
+
+.hero::before {
+    content: "";
+    position: absolute;
+    width: 320px;
+    height: 320px;
+    right: -125px;
+    top: -155px;
+    border: 1px solid rgba(255,255,255,.14);
+    border-radius: 50%;
+    box-shadow: 0 0 0 48px rgba(255,255,255,.035), 0 0 0 96px rgba(255,255,255,.025);
+}
+
+.hero-content {
+    position: relative;
+    z-index: 2;
+    max-width: 900px;
+}
+
+.hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 11px;
+    margin-bottom: 14px;
+    border: 1px solid rgba(255,255,255,.18);
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    color: rgba(255,255,255,.88);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: .9px;
+    text-transform: uppercase;
 }
 
 .hero h1 {
     margin: 0;
-
-    font-size: 34px;
-
-    font-weight: 800;
-
-    letter-spacing: -0.5px;
+    color: #fff !important;
+    font-size: 38px;
+    font-weight: 850;
+    line-height: 1.1;
+    letter-spacing: -1px;
 }
 
 .hero p {
-    margin-top: 9px;
-
-    margin-bottom: 0;
-
+    margin: 12px 0 0;
+    max-width: 720px;
+    color: rgba(255,255,255,.82);
     font-size: 15px;
-
-    opacity: 0.9;
+    line-height: 1.6;
 }
 
+.hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 9px;
+    margin-top: 20px;
+}
+
+.hero-chip {
+    padding: 7px 11px;
+    border-radius: 10px;
+    background: rgba(15,23,42,.34);
+    border: 1px solid rgba(255,255,255,.13);
+    color: rgba(255,255,255,.9);
+    font-size: 12px;
+    font-weight: 650;
+}
+
+/* ============================================================
+   SIDEBAR / NAVIGATION
+   ============================================================ */
+[data-testid="stSidebar"] {
+    background: linear-gradient(180deg, #08111f 0%, #0f172a 48%, #1e1b4b 100%);
+    border-right: 1px solid rgba(255,255,255,.08);
+}
+
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 1.2rem;
+}
+
+[data-testid="stSidebar"] * {
+    color: #f8fafc !important;
+}
+
+.sidebar-brand {
+    padding: 8px 4px 18px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,.10);
+}
+
+.sidebar-brand-title {
+    font-size: 17px;
+    font-weight: 850;
+    letter-spacing: -.2px;
+}
+
+.sidebar-brand-subtitle {
+    margin-top: 4px;
+    color: #94a3b8 !important;
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+[data-testid="stSidebar"] [data-testid="stAlert"] {
+    background: rgba(255,255,255,.06);
+    border-color: rgba(255,255,255,.12);
+}
+
+/* ============================================================
+   TAB NAVIGATION
+   ============================================================ */
+[data-baseweb="tab-list"] {
+    gap: 8px;
+    padding: 8px;
+    margin-bottom: 26px;
+    border: 1px solid #dbe3ef;
+    border-radius: 16px;
+    background: rgba(255,255,255,.72);
+    box-shadow: 0 8px 24px rgba(15,23,42,.05);
+}
+
+button[data-baseweb="tab"] {
+    min-height: 42px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    color: #475569 !important;
+    font-size: 13px;
+    font-weight: 750;
+    transition: all .18s ease;
+}
+
+button[data-baseweb="tab"]:hover {
+    background: #eef2ff;
+    color: #4338ca !important;
+}
+
+button[data-baseweb="tab"][aria-selected="true"] {
+    color: #fff !important;
+    background:
+        linear-gradient(
+            135deg,
+            #4f46e5,
+            #7c3aed
+        ) !important;
+    box-shadow:
+        0 8px 20px rgba(79,70,229,.30) !important;
+}
 
 /* ============================================================
    SECTION TITLES
    ============================================================ */
-
 .section-title {
-    font-size: 24px;
-
-    font-weight: 800;
-
-    color: #111827;
-
-    margin-top: 12px;
-
-    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 6px 0 20px;
+    color: #0f172a;
+    font-size: 25px;
+    font-weight: 850;
+    letter-spacing: -.5px;
 }
 
+.section-kicker {
+    margin: -11px 0 22px;
+    color: #64748b;
+    font-size: 13px;
+    line-height: 1.55;
+}
+
+h1, h2, h3, h4 {
+    color: #0f172a;
+}
 
 /* ============================================================
-   INFORMATION CARDS
+   SURFACE / INFO CARDS
    ============================================================ */
-
 .info-card {
-    background: white;
+    min-height: 112px;
+    padding: 20px 21px;
+    margin-bottom: 14px;
 
-    border: 1px solid #e5e7eb;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    border-radius: 20px;
 
-    border-radius: 18px;
-
-    padding: 20px;
-
-    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.96);
 
     box-shadow:
-        0 6px 20px rgba(15, 23, 42, 0.05);
+        0 12px 30px rgba(30, 41, 59, 0.08),
+        0 2px 6px rgba(30, 41, 59, 0.04);
 }
 
 .info-card h3 {
-    margin-top: 0;
-
-    margin-bottom: 8px;
-
+    margin: 0 0 7px;
     color: #111827;
-
-    font-size: 18px;
+    font-size: 17px;
+    font-weight: 800;
 }
 
 .info-card p {
-    color: #6b7280;
-
+    margin: 0;
+    color: #64748b;
+    font-size: 13px;
     line-height: 1.6;
-
-    font-size: 14px;
 }
 
-
 /* ============================================================
-   STREAMLIT METRIC CARDS
+   STREAMLIT METRICS
    ============================================================ */
-
 [data-testid="stMetric"] {
-    background: white;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 18px;
-
+    min-height: 112px;
     padding: 18px 20px;
-
-    min-height: 110px;
-
-    box-shadow:
-        0 6px 20px rgba(15, 23, 42, 0.05);
+    border: 1px solid #dbe3ef;
+    border-radius: 17px;
+    background: #fff;
+    box-shadow: 0 9px 24px rgba(15,23,42,.055);
 }
 
 [data-testid="stMetricLabel"] {
-    color: #6b7280 !important;
-
-    font-size: 13px !important;
-
-    font-weight: 700 !important;
+    color: #64748b !important;
+    font-size: 12px !important;
+    font-weight: 750 !important;
 }
 
 [data-testid="stMetricValue"] {
-    color: #111827 !important;
-
-    font-size: 28px !important;
-
-    font-weight: 800 !important;
+    color: #0f172a !important;
+    font-size: 27px !important;
+    font-weight: 850 !important;
 }
 
-
 /* ============================================================
-   MAIN SCORE
+   INPUTS / FORMS
    ============================================================ */
-
-.score-container {
-    background:
-        linear-gradient(
-            135deg,
-            #eef2ff,
-            #f5f3ff
-        );
-
-    border: 1px solid #ddd6fe;
-
-    border-radius: 22px;
-
-    padding: 22px;
-
-    margin: 15px 0;
-
-    box-shadow:
-        0 8px 25px rgba(79, 70, 229, 0.08);
+[data-baseweb="input"] > div,
+[data-baseweb="textarea"] > div,
+[data-baseweb="select"] > div {
+    border-color: #d5deeb !important;
+    border-radius: 12px !important;
+    background: #fff !important;
 }
 
+[data-baseweb="input"]:focus-within > div,
+[data-baseweb="textarea"]:focus-within > div,
+[data-baseweb="select"]:focus-within > div {
+    border-color: #6366f1 !important;
+    box-shadow: 0 0 0 3px rgba(99,102,241,.10) !important;
+}
 
-/* ============================================================
-   SKILL BADGES
-   ============================================================ */
+textarea, input {
+    border-radius: 12px !important;
+}
 
-.skill {
-    display: inline-block;
-
-    padding: 7px 13px;
-
-    margin: 4px;
-
-    border-radius: 999px;
-
+label[data-testid="stWidgetLabel"] p {
+    color: #334155;
     font-size: 13px;
-
-    font-weight: 600;
+    font-weight: 700;
 }
-
-.skill-match {
-    background: #dcfce7;
-
-    color: #166534;
-
-    border: 1px solid #bbf7d0;
-}
-
-.skill-missing {
-    background: #fee2e2;
-
-    color: #991b1b;
-
-    border: 1px solid #fecaca;
-}
-
-
-/* ============================================================
-   AGENT CARD
-   ============================================================ */
-
-.agent-card {
-    background:
-        linear-gradient(
-            135deg,
-            #111827,
-            #312e81
-        );
-
-    color: white;
-
-    border-radius: 22px;
-
-    padding: 28px;
-
-    margin-bottom: 22px;
-
-    box-shadow:
-        0 12px 30px rgba(17, 24, 39, 0.18);
-}
-
-.agent-title {
-    font-size: 24px;
-
-    font-weight: 800;
-
-    margin-bottom: 5px;
-}
-
-.agent-subtitle {
-    font-size: 14px;
-
-    opacity: 0.75;
-}
-
-
-/* ============================================================
-   AI RESPONSE
-   ============================================================ */
-
-.ai-response {
-    background: white;
-
-    border-left: 5px solid #6366f1;
-
-    border-radius: 16px;
-
-    padding: 20px;
-
-    margin-top: 16px;
-
-    box-shadow:
-        0 6px 20px rgba(15, 23, 42, 0.06);
-}
-
-
-/* ============================================================
-   RANKING CARDS
-   ============================================================ */
-
-.rank-card {
-    background: white;
-
-    border: 1px solid #e5e7eb;
-
-    border-radius: 18px;
-
-    padding: 20px;
-
-    margin: 12px 0;
-
-    box-shadow:
-        0 6px 20px rgba(15, 23, 42, 0.05);
-}
-
-.rank-number {
-    font-size: 25px;
-
-    font-weight: 800;
-
-    color: #4f46e5;
-}
-
-.rank-name {
-    font-size: 18px;
-
-    font-weight: 750;
-
-    color: #111827;
-}
-
-.rank-score {
-    font-size: 24px;
-
-    font-weight: 800;
-
-    color: #16a34a;
-}
-
-
-/* ============================================================
-   SIDEBAR
-   ============================================================ */
-
-[data-testid="stSidebar"] {
-    background:
-        linear-gradient(
-            180deg,
-            #111827,
-            #1e1b4b
-        );
-}
-
-[data-testid="stSidebar"] * {
-    color: #f9fafb !important;
-}
-
 
 /* ============================================================
    BUTTONS
    ============================================================ */
-
-.stButton > button {
+.stButton > button,
+.stDownloadButton > button {
+    min-height: 43px;
+    padding: 8px 18px;
+    border: 1px solid #dbe3ef;
     border-radius: 12px;
-
-    border: none;
-
-    font-weight: 700;
-
-    min-height: 42px;
-
-    transition: all 0.2s ease;
+    color: #1e293b;
+    background: #fff;
+    font-weight: 750;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
 }
 
-.stButton > button:hover {
+.stButton > button:hover,
+.stDownloadButton > button:hover {
     transform: translateY(-2px);
-
-    box-shadow:
-        0 7px 18px rgba(79, 70, 229, 0.15);
+    border-color: #818cf8;
+    box-shadow: 0 9px 22px rgba(79,70,229,.14);
 }
 
+.stButton > button[kind="primary"] {
+    border: none !important;
+    color: #fff !important;
+    background: linear-gradient(135deg, #4338ca, #2563eb) !important;
+    box-shadow: 0 8px 20px rgba(67,56,202,.20);
+}
+
+.stButton > button[kind="primary"]:hover {
+    box-shadow: 0 12px 26px rgba(67,56,202,.28);
+}
 
 /* ============================================================
-   INPUTS
+   SCORE / SKILLS
    ============================================================ */
-
-textarea,
-input {
-    border-radius: 12px !important;
+.score-container {
+    padding: 24px;
+    margin: 16px 0;
+    border: 1px solid #c7d2fe;
+    border-radius: 20px;
+    background: linear-gradient(135deg, #eef2ff, #f8fafc 60%, #eff6ff);
+    box-shadow: 0 12px 30px rgba(79,70,229,.08);
 }
 
+.skill {
+    display: inline-block;
+    padding: 7px 12px;
+    margin: 3px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 750;
+}
+
+.skill-match {
+    color: #166534;
+    background: #dcfce7;
+    border: 1px solid #bbf7d0;
+}
+
+.skill-missing {
+    color: #991b1b;
+    background: #fee2e2;
+    border: 1px solid #fecaca;
+}
 
 /* ============================================================
-   TABS
+   AGENT / AI SURFACES
    ============================================================ */
-
-button[data-baseweb="tab"] {
-    font-weight: 700;
-
-    font-size: 14px;
+.agent-card {
+    position: relative;
+    overflow: hidden;
+    padding: 28px 30px;
+    margin-bottom: 22px;
+    border-radius: 22px;
+    color: #fff;
+    background: linear-gradient(135deg, #090f1d, #1e1b4b 52%, #312e81);
+    box-shadow: 0 18px 38px rgba(15,23,42,.20);
 }
 
-button[data-baseweb="tab"][aria-selected="true"] {
-    color: #4f46e5 !important;
+.agent-card::after {
+    content: "AI";
+    position: absolute;
+    right: 24px;
+    bottom: -25px;
+    color: rgba(255,255,255,.05);
+    font-size: 110px;
+    font-weight: 900;
 }
 
-
-/* ============================================================
-   DIVIDERS
-   ============================================================ */
-
-hr {
-    border-color: #e5e7eb;
+.agent-title {
+    position: relative;
+    z-index: 1;
+    margin-bottom: 6px;
+    font-size: 25px;
+    font-weight: 850;
 }
 
-
-/* ============================================================
-   FOOTER
-   ============================================================ */
-
-.footer {
-    text-align: center;
-
-    padding: 28px;
-
-    color: #6b7280;
-
+.agent-subtitle {
+    position: relative;
+    z-index: 1;
+    color: rgba(255,255,255,.76);
     font-size: 13px;
+    line-height: 1.55;
 }
 
+.ai-response {
+    padding: 20px 21px;
+    margin-top: 16px;
+    border: 1px solid #dbe3ef;
+    border-left: 5px solid #6366f1;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 9px 24px rgba(15,23,42,.06);
+}
 
 /* ============================================================
-   ALERT / STATUS BOXES
+   RANKING CARDS
    ============================================================ */
+.rank-card {
+    padding: 20px;
+    margin: 12px 0;
+    border: 1px solid #dbe3ef;
+    border-radius: 18px;
+    background: #fff;
+    box-shadow: 0 9px 24px rgba(15,23,42,.055);
+}
+
+.rank-number {
+    color: #4f46e5;
+    font-size: 25px;
+    font-weight: 850;
+}
+
+.rank-name {
+    color: #111827;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.rank-score {
+    color: #15803d;
+    font-size: 24px;
+    font-weight: 850;
+}
+
+/* ============================================================
+   FILE UPLOADER / TABLES / EXPANDERS
+   ============================================================ */
+[data-testid="stFileUploader"] {
+    padding: 10px;
+    border: 1px solid #dbe3ef;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 8px 22px rgba(15,23,42,.045);
+}
+
+[data-testid="stDataFrame"] {
+    overflow: hidden;
+    border: 1px solid #dbe3ef;
+    border-radius: 15px;
+    box-shadow: 0 8px 22px rgba(15,23,42,.045);
+}
+
+[data-testid="stExpander"] {
+    overflow: hidden;
+    border: 1px solid #dbe3ef;
+    border-radius: 14px;
+    background: rgba(255,255,255,.9);
+}
 
 [data-testid="stAlert"] {
     border-radius: 14px;
 }
 
+hr {
+    border: none;
+    border-top: 1px solid #dbe3ef;
+    margin: 25px 0;
+}
 
 /* ============================================================
-   DATAFRAME
+   FOOTER
+   ============================================================ */
+.footer {
+    padding: 28px 20px;
+    margin-top: 32px;
+    border-top: 1px solid #dbe3ef;
+    color: #64748b;
+    font-size: 12px;
+    text-align: center;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+    .block-container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+
+    .hero {
+        min-height: auto;
+        padding: 28px 25px;
+        border-radius: 21px;
+    }
+
+    .hero h1 {
+        font-size: 31px;
+    }
+
+    [data-baseweb="tab-list"] {
+        overflow-x: auto;
+    }
+}
+
+@media (max-width: 600px) {
+    .block-container {
+        padding-top: .8rem;
+    }
+
+    .hero {
+        padding: 24px 20px;
+    }
+
+    .hero h1 {
+        font-size: 26px;
+        letter-spacing: -.6px;
+    }
+
+    .hero p {
+        font-size: 13px;
+    }
+
+    .hero-meta {
+        gap: 6px;
+    }
+
+    .hero-chip {
+        font-size: 11px;
+    }
+
+    .section-title {
+        font-size: 21px;
+    }
+}
+
+/* ============================================================
+   AI HR HEADER IMAGE
    ============================================================ */
 
-[data-testid="stDataFrame"] {
-    border-radius: 14px;
+.hero {
+    position: relative !important;
+    overflow: hidden !important;
 
-    overflow: hidden;
+    min-height: 190px !important;
+
+    padding: 38px 42px !important;
+
+    border-radius: 26px !important;
+
+    margin-bottom: 30px !important;
+
+    color: white !important;
+
+    background-image:
+        linear-gradient(
+            90deg,
+            rgba(2, 6, 23, 0.94) 0%,
+            rgba(15, 23, 42, 0.82) 38%,
+            rgba(30, 27, 75, 0.62) 68%,
+            rgba(37, 99, 235, 0.48) 100%
+        ),
+        url("data:image/png;base64,""" + HEADER_IMAGE_BASE64 + """") !important;
+
+    background-size: cover !important;
+
+    background-position: center !important;
+
+    background-repeat: no-repeat !important;
+
+    box-shadow:
+        0 22px 50px rgba(30, 27, 75, 0.28) !important;
+}
+
+
+/* Keep all header content above the image */
+
+.hero-content {
+    position: relative !important;
+    z-index: 10 !important;
+}
+
+.hero h1 {
+    position: relative !important;
+    z-index: 10 !important;
+
+    color: #ffffff !important;
+
+    text-shadow:
+        0 3px 14px rgba(0, 0, 0, 0.40) !important;
+}
+
+.hero p {
+    position: relative !important;
+    z-index: 10 !important;
+
+    color: rgba(255,255,255,0.90) !important;
+
+    text-shadow:
+        0 2px 8px rgba(0, 0, 0, 0.35) !important;
+}
+
+
+/* Image depth overlay */
+
+.hero::before {
+    content: "" !important;
+
+    position: absolute !important;
+
+    inset: 0 !important;
+
+    z-index: 1 !important;
+
+    pointer-events: none !important;
+
+    background:
+        linear-gradient(
+            90deg,
+            rgba(2, 6, 23, 0.25),
+            transparent 60%
+        ) !important;
+}
+
+
+/* Soft light effect */
+
+.hero::after {
+    content: "" !important;
+
+    position: absolute !important;
+
+    width: 320px !important;
+    height: 320px !important;
+
+    right: -110px !important;
+    top: -150px !important;
+
+    border-radius: 50% !important;
+
+    z-index: 2 !important;
+
+    pointer-events: none !important;
+
+    background:
+        radial-gradient(
+            circle,
+            rgba(255,255,255,0.13),
+            transparent 68%
+        ) !important;
 }
 
 
 /* ============================================================
-   FILE UPLOADER
+   AI HR RECRUITMENT ASSISTANT
+   PREMIUM GLASS DASHBOARD UI
+   Keeps existing functionality + header + background image
+   ============================================================ */
+
+
+/* ============================================================
+   1. APP / PAGE BACKGROUND
+   ============================================================ */
+
+[data-testid="stAppViewContainer"] {
+    background: transparent !important;
+}
+
+[data-testid="stAppViewContainer"] > .main {
+    background: transparent !important;
+}
+
+.main .block-container {
+    max-width: 1380px !important;
+
+    padding-top: 28px !important;
+    padding-bottom: 70px !important;
+    padding-left: 32px !important;
+    padding-right: 32px !important;
+}
+
+
+/* ============================================================
+   2. SOFT DARK OVERLAY
+   Makes the background image visible but keeps text readable
+   ============================================================ */
+
+[data-testid="stAppViewContainer"]::before {
+    content: "";
+    position: fixed;
+
+    inset: 0;
+
+    pointer-events: none;
+    z-index: 0;
+
+    background:
+        linear-gradient(
+            180deg,
+            rgba(5, 15, 45, 0.12) 0%,
+            rgba(15, 23, 60, 0.16) 45%,
+            rgba(240, 244, 255, 0.25) 100%
+        );
+}
+
+
+/* Keep actual Streamlit content above overlay */
+
+.main,
+.block-container {
+    position: relative;
+    z-index: 1;
+}
+
+
+/* ============================================================
+   3. HEADER
+   Your existing .hero remains untouched
+   ============================================================ */
+
+.hero {
+    position: relative !important;
+    overflow: hidden !important;
+
+    border-radius: 24px !important;
+
+    border: 1px solid rgba(255,255,255,0.35) !important;
+
+    box-shadow:
+        0 25px 60px rgba(5, 15, 50, 0.35),
+        0 0 45px rgba(79,70,229,0.18) !important;
+}
+
+.hero h1 {
+    font-weight: 850 !important;
+    letter-spacing: -1px !important;
+}
+
+.hero p {
+    opacity: 0.95 !important;
+}
+
+
+/* ============================================================
+   4. TABS — FLOATING GLASS NAVIGATION
+   ============================================================ */
+
+.stTabs {
+    margin-top: 22px !important;
+}
+
+
+/* Main navigation container */
+
+.stTabs [data-baseweb="tab-list"] {
+    display: flex !important;
+    align-items: center !important;
+
+    gap: 8px !important;
+
+    padding: 8px !important;
+
+    border-radius: 20px !important;
+
+    background:
+        rgba(255,255,255,0.72) !important;
+
+    border:
+        1px solid rgba(255,255,255,0.75) !important;
+
+    box-shadow:
+        0 18px 45px rgba(20,35,80,0.16),
+        inset 0 1px 0 rgba(255,255,255,0.9) !important;
+
+    backdrop-filter: blur(20px) saturate(150%) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(150%) !important;
+}
+
+
+/* Individual tabs */
+
+.stTabs [data-baseweb="tab"] {
+    min-height: 44px !important;
+
+    padding:
+        0 18px !important;
+
+    border-radius: 14px !important;
+
+    border: none !important;
+
+    background: transparent !important;
+
+    color: #172554 !important;
+
+    font-weight: 700 !important;
+
+    transition:
+        all 0.2s ease !important;
+}
+
+
+/* Hover */
+
+.stTabs [data-baseweb="tab"]:hover {
+    background:
+        rgba(99,102,241,0.10) !important;
+
+    transform:
+        translateY(-1px);
+}
+
+
+/* Active tab */
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    color: white !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4f46e5,
+            #7c3aed
+        ) !important;
+
+    box-shadow:
+        0 8px 22px rgba(79,70,229,0.35) !important;
+}
+
+
+/* Remove default Streamlit underline */
+
+.stTabs [data-baseweb="tab-highlight"] {
+    display: none !important;
+}
+
+
+/* ============================================================
+   5. TAB CONTENT — GLASS WORKSPACE
+   ============================================================ */
+
+.stTabs [data-baseweb="tab-panel"] {
+    margin-top: 20px !important;
+
+    padding: 26px !important;
+
+    border-radius: 26px !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0.74),
+            rgba(245,248,255,0.58)
+        ) !important;
+
+    border:
+        1px solid rgba(255,255,255,0.72) !important;
+
+    box-shadow:
+        0 25px 70px rgba(20,35,80,0.14),
+        inset 0 1px 0 rgba(255,255,255,0.9) !important;
+
+    backdrop-filter:
+        blur(22px) saturate(140%) !important;
+
+    -webkit-backdrop-filter:
+        blur(22px) saturate(140%) !important;
+}
+
+
+/* ============================================================
+   6. SECTION TITLES
+   ============================================================ */
+
+h1, h2, h3 {
+    color: #101a3a !important;
+}
+
+h2 {
+    font-weight: 850 !important;
+    letter-spacing: -0.7px !important;
+}
+
+h3 {
+    font-weight: 800 !important;
+}
+
+
+/* ============================================================
+   7. YOUR EXISTING INFO CARDS
+   ============================================================ */
+
+.info-card {
+    position: relative !important;
+
+    min-height: 112px !important;
+
+    padding: 23px 25px !important;
+
+    border-radius: 20px !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(255,255,255,0.94),
+            rgba(238,243,255,0.82)
+        ) !important;
+
+    border:
+        1px solid rgba(255,255,255,0.95) !important;
+
+    box-shadow:
+        0 16px 38px rgba(20,30,80,0.18),
+        inset 0 1px 0 rgba(255,255,255,0.95) !important;
+
+    backdrop-filter:
+        blur(18px) !important;
+
+    -webkit-backdrop-filter:
+        blur(18px) !important;
+}
+
+.info-card:hover {
+    transform: translateY(-3px) !important;
+
+    box-shadow:
+        0 22px 48px rgba(20,35,80,0.18),
+        0 0 25px rgba(99,102,241,0.08) !important;
+}
+
+
+/* ============================================================
+   8. STREAMLIT COLUMNS
+   Makes the two-column layout feel intentional
+   ============================================================ */
+
+[data-testid="column"] {
+    position: relative !important;
+}
+
+
+/* ============================================================
+   9. TEXT AREAS
+   ============================================================ */
+
+.stTextArea textarea {
+    border-radius: 16px !important;
+
+    border:
+        1px solid rgba(148,163,184,0.20) !important;
+
+    background:
+        rgba(248,250,255,0.78) !important;
+
+    color:
+        #172554 !important;
+
+    box-shadow:
+        inset 0 2px 8px rgba(20,35,80,0.035) !important;
+
+    backdrop-filter:
+        blur(10px) !important;
+}
+
+.stTextArea textarea:focus {
+    border-color:
+        #6366f1 !important;
+
+    box-shadow:
+        0 0 0 3px rgba(99,102,241,0.13),
+        0 8px 20px rgba(79,70,229,0.08) !important;
+}
+
+
+/* ============================================================
+   10. FILE UPLOADER
    ============================================================ */
 
 [data-testid="stFileUploader"] {
-    background: white;
+    padding: 14px !important;
 
-    border-radius: 16px;
+    border-radius: 19px !important;
 
-    padding: 8px;
+    background:
+        rgba(255,255,255,0.72) !important;
 
-    border: 1px solid #e5e7eb;
+    border:
+        1px solid rgba(255,255,255,0.90) !important;
+
+    box-shadow:
+        0 14px 32px rgba(20,35,80,0.10) !important;
+
+    backdrop-filter:
+        blur(16px) !important;
+}
+
+[data-testid="stFileUploaderDropzone"] {
+    border-radius: 15px !important;
+
+    border:
+        1px dashed rgba(79,70,229,0.35) !important;
+
+    background:
+        rgba(238,242,255,0.62) !important;
 }
 
 
 /* ============================================================
-   RESPONSIVE SPACING
+   11. BUTTONS
    ============================================================ */
 
-.block-container {
-    padding-top: 2rem;
+.stButton > button {
+    min-height: 45px !important;
 
-    padding-bottom: 3rem;
+    padding:
+        0 23px !important;
+
+    border:
+        none !important;
+
+    border-radius:
+        14px !important;
+
+    color:
+        white !important;
+
+    font-weight:
+        750 !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4f46e5,
+            #7c3aed
+        ) !important;
+
+    box-shadow:
+        0 9px 24px rgba(79,70,229,0.28) !important;
+
+    transition:
+        all 0.2s ease !important;
+}
+
+.stButton > button:hover {
+    transform:
+        translateY(-2px) !important;
+
+    box-shadow:
+        0 15px 32px rgba(79,70,229,0.38) !important;
+}
+
+
+/* ============================================================
+   12. METRIC CARDS
+   ============================================================ */
+
+[data-testid="stMetric"] {
+    padding: 20px !important;
+
+    border-radius: 19px !important;
+
+    background:
+        rgba(255,255,255,0.78) !important;
+
+    border:
+        1px solid rgba(255,255,255,0.90) !important;
+
+    box-shadow:
+        0 15px 35px rgba(20,35,80,0.11) !important;
+
+    backdrop-filter:
+        blur(16px) !important;
+}
+
+[data-testid="stMetricLabel"] {
+    color:
+        #64748b !important;
+
+    font-weight:
+        650 !important;
+}
+
+[data-testid="stMetricValue"] {
+    color:
+        #4338ca !important;
+
+    font-weight:
+        850 !important;
+}
+
+
+/* ============================================================
+   13. RANKING CARDS
+   ============================================================ */
+
+.rank-card {
+    padding: 22px !important;
+
+    margin: 15px 0 !important;
+
+    border-radius: 20px !important;
+
+    background:
+        rgba(255,255,255,0.80) !important;
+
+    border:
+        1px solid rgba(255,255,255,0.90) !important;
+
+    box-shadow:
+        0 16px 38px rgba(20,35,80,0.11) !important;
+
+    backdrop-filter:
+        blur(16px) !important;
+}
+
+
+/* ============================================================
+   14. EXPANDERS
+   ============================================================ */
+
+[data-testid="stExpander"] {
+    border-radius:
+        18px !important;
+
+    border:
+        1px solid rgba(255,255,255,0.82) !important;
+
+    background:
+        rgba(255,255,255,0.72) !important;
+
+    box-shadow:
+        0 12px 30px rgba(20,35,80,0.08) !important;
+
+    backdrop-filter:
+        blur(14px) !important;
+}
+
+
+/* ============================================================
+   15. DATAFRAME
+   ============================================================ */
+
+[data-testid="stDataFrame"] {
+    border-radius:
+        18px !important;
+
+    overflow:
+        hidden !important;
+
+    border:
+        1px solid rgba(255,255,255,0.75) !important;
+
+    box-shadow:
+        0 15px 35px rgba(20,35,80,0.11) !important;
+}
+
+
+/* ============================================================
+   16. ALERTS
+   ============================================================ */
+
+[data-testid="stAlert"] {
+    border-radius:
+        16px !important;
+
+    border:
+        1px solid rgba(99,102,241,0.16) !important;
+
+    box-shadow:
+        0 10px 25px rgba(20,35,80,0.07) !important;
+
+    backdrop-filter:
+        blur(12px) !important;
+}
+
+
+/* ============================================================
+   17. DOWNLOAD BUTTON
+   ============================================================ */
+
+.stDownloadButton > button {
+    border-radius:
+        13px !important;
+
+    border:
+        1px solid rgba(79,70,229,0.25) !important;
+
+    background:
+        rgba(255,255,255,0.82) !important;
+
+    color:
+        #4338ca !important;
+
+    font-weight:
+        700 !important;
+}
+
+.stDownloadButton > button:hover {
+    background:
+        rgba(238,242,255,0.95) !important;
+
+    border-color:
+        #6366f1 !important;
+}
+
+
+/* ============================================================
+   18. LABELS
+   ============================================================ */
+
+label {
+    color:
+        #172554 !important;
+
+    font-weight:
+        700 !important;
+}
+
+
+/* ============================================================
+   19. DIVIDERS
+   ============================================================ */
+
+hr {
+    border:
+        none !important;
+
+    height:
+        1px !important;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(99,102,241,0.30),
+            transparent
+        ) !important;
+
+    margin:
+        24px 0 !important;
+}
+
+
+/* ============================================================
+   20. SCROLLBAR
+   ============================================================ */
+
+::-webkit-scrollbar {
+    width: 9px;
+}
+
+::-webkit-scrollbar-track {
+    background:
+        rgba(226,232,240,0.35);
+}
+
+::-webkit-scrollbar-thumb {
+    border-radius:
+        10px;
+
+    background:
+        linear-gradient(
+            #6366f1,
+            #7c3aed
+        );
+}
+
+
+/* ============================================================
+   21. MOBILE
+   ============================================================ */
+
+@media (max-width: 900px) {
+
+    .main .block-container {
+        padding-left:
+            15px !important;
+
+        padding-right:
+            15px !important;
+    }
+
+    .stTabs [data-baseweb="tab-list"] {
+        display: flex !important;
+        align-items: center !important;
+        gap: 10px !important;
+
+        padding: 8px !important;
+
+        border-radius: 18px !important;
+
+        background: rgba(255, 255, 255, 0.82) !important;
+
+        border: 1px solid rgba(255, 255, 255, 0.95) !important;
+
+        box-shadow:
+            0 10px 30px rgba(20, 30, 80, 0.18),
+            inset 0 1px 0 rgba(255,255,255,0.95) !important;
+
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        padding:
+            0 12px !important;
+
+        font-size:
+            13px !important;
+    }
+
+    /* ============================================================
+    GLASS MAIN WORKSPACE
+    ============================================================ */
+
+    .stTabs [data-baseweb="tab-panel"] {
+        margin-top: 18px !important;
+
+        padding: 28px !important;
+
+        border-radius: 26px !important;
+
+        background:
+            linear-gradient(
+                135deg,
+                rgba(35, 65, 150, 0.34),
+                rgba(255, 255, 255, 0.12)
+            ) !important;
+
+        border:
+            1px solid rgba(255,255,255,0.48) !important;
+
+        box-shadow:
+            0 20px 55px rgba(15, 30, 80, 0.20),
+            inset 0 1px 0 rgba(255,255,255,0.65) !important;
+
+        backdrop-filter:
+            blur(18px) saturate(135%) !important;
+
+        -webkit-backdrop-filter:
+            blur(18px) saturate(135%) !important;
+    }
+
+    .hero {
+        border-radius:
+            20px !important;
+    }
+}
+
+
+/* ============================================================
+   PREMIUM AI HR DASHBOARD
+   FINAL GLASS UI
+   ============================================================ */
+
+
+/* ------------------------------------------------------------
+   1. MAIN CONTENT
+   ------------------------------------------------------------ */
+
+.block-container {
+    max-width: 1380px !important;
+
+    padding-top: 5.5rem !important;
+    padding-bottom: 4rem !important;
+}
+
+
+/* ------------------------------------------------------------
+   2. BACKGROUND
+   ------------------------------------------------------------ */
+
+.stApp {
+    background-color: transparent !important;
+}
+
+
+/* REMOVE DARK SIDE OVERLAY */
+
+.stApp::before {
+    display: none !important;
+}
+
+
+/* Keep content above background */
+
+.stApp > div {
+    position: relative !important;
+    z-index: 1 !important;
+}
+
+
+/* ------------------------------------------------------------
+   3. HEADER
+   ------------------------------------------------------------ */
+
+.hero {
+    position: relative !important;
+
+    overflow: hidden !important;
+
+    border-radius: 24px !important;
+
+    box-shadow:
+        0 22px 55px rgba(15, 23, 60, 0.22) !important;
+}
+
+.hero h1 {
+    font-weight: 850 !important;
+
+    letter-spacing: -1px !important;
+}
+
+.hero p {
+    opacity: 0.94 !important;
+}
+
+
+/* ------------------------------------------------------------
+   4. TAB NAVIGATION
+   ------------------------------------------------------------ */
+
+.stTabs {
+    position: relative !important;
+
+    z-index: 10 !important;
+
+    margin-top: 18px !important;
+
+    margin-bottom: 18px !important;
+}
+
+
+/* GLASS TAB BAR */
+
+.stTabs [data-baseweb="tab-list"] {
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 7px !important;
+
+    padding: 8px !important;
+
+    border-radius: 20px !important;
+
+    background: rgba(205, 220, 255, 0.82) !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.96) !important;
+
+    box-shadow:
+        0 12px 32px rgba(30, 41, 90, 0.16) !important;
+
+    backdrop-filter: blur(20px) !important;
+
+    -webkit-backdrop-filter: blur(20px) !important;
+}
+
+
+/* INDIVIDUAL TABS */
+
+.stTabs [data-baseweb="tab"] {
+    min-height: 42px !important;
+
+    padding: 0 17px !important;
+
+    border-radius: 13px !important;
+
+    border: none !important;
+
+    background: transparent !important;
+
+    color: #172554 !important;
+
+    font-weight: 700 !important;
+
+    transition:
+        background 0.2s ease,
+        color 0.2s ease,
+        transform 0.2s ease !important;
+}
+
+
+/* TAB HOVER */
+
+.stTabs [data-baseweb="tab"]:hover {
+    background:
+        rgba(79, 70, 229, 0.10) !important;
+
+    color: #312e81 !important;
+}
+
+
+/* ACTIVE TAB */
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] {
+    color: #ffffff !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4f46e5,
+            #7c3aed
+        ) !important;
+
+    box-shadow:
+        0 7px 18px rgba(79, 70, 229, 0.30) !important;
+}
+
+
+/* ACTIVE TAB TEXT */
+
+.stTabs [data-baseweb="tab"][aria-selected="true"] * {
+    color: #ffffff !important;
+}
+
+
+/* REMOVE DEFAULT STREAMLIT LINE */
+
+.stTabs [data-baseweb="tab-highlight"] {
+    display: none !important;
+}
+
+
+/* ------------------------------------------------------------
+   5. MAIN GLASS WORKSPACE
+   ------------------------------------------------------------ */
+
+.stTabs > div:nth-child(2) {
+    position: relative !important;
+
+    padding: 18px !important;
+
+    margin-top: 8px !important;
+
+    border-radius: 24px !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            rgba(65, 110, 205, 0.32),
+            rgba(91, 70, 190, 0.24)
+        ) !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.38) !important;
+
+    box-shadow:
+        0 20px 48px rgba(20, 35, 90, 0.14) !important;
+
+    backdrop-filter: blur(16px) !important;
+
+    -webkit-backdrop-filter: blur(16px) !important;
+}
+
+
+/* ------------------------------------------------------------
+   6. SECTION HEADINGS
+   ------------------------------------------------------------ */
+
+h2 {
+    color: #101a3a !important;
+
+    font-weight: 850 !important;
+
+    letter-spacing: -0.5px !important;
+}
+
+h3 {
+    color: #172554 !important;
+
+    font-weight: 800 !important;
+}
+
+
+/* ------------------------------------------------------------
+   7. INFORMATION CARDS
+   ------------------------------------------------------------ */
+
+.info-card {
+    position: relative !important;
+
+    min-height: 112px !important;
+
+    padding: 23px 25px !important;
+
+    margin-bottom: 16px !important;
+
+    border-radius: 21px !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.97) !important;
+
+    background:
+        rgba(255, 255, 255, 0.94) !important;
+
+    box-shadow:
+        0 15px 35px rgba(30, 41, 59, 0.14) !important;
+
+    backdrop-filter: blur(18px) !important;
+
+    -webkit-backdrop-filter: blur(18px) !important;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease !important;
+}
+
+
+.info-card:hover {
+    transform: translateY(-3px) !important;
+
+    box-shadow:
+        0 20px 42px rgba(30, 41, 59, 0.18) !important;
+}
+
+
+/* CARD TITLE */
+
+.info-card h3 {
+    color: #172554 !important;
+
+    font-size: 18px !important;
+
+    font-weight: 800 !important;
+}
+
+
+/* CARD DESCRIPTION */
+
+.info-card p {
+    color: #60708f !important;
+
+    line-height: 1.55 !important;
+}
+
+
+/* ------------------------------------------------------------
+   8. TEXT AREAS
+   ------------------------------------------------------------ */
+
+.stTextArea textarea,
+.stTextInput input {
+    border-radius: 15px !important;
+
+    border:
+        1px solid rgba(148, 163, 184, 0.20) !important;
+
+    background:
+        rgba(248, 250, 255, 0.94) !important;
+
+    color: #172554 !important;
+
+    box-shadow:
+        inset 0 1px 4px rgba(30, 41, 59, 0.035) !important;
+}
+
+
+.stTextArea textarea:focus,
+.stTextInput input:focus {
+    border-color:
+        #6366f1 !important;
+
+    box-shadow:
+        0 0 0 3px rgba(99, 102, 241, 0.12) !important;
+}
+
+
+/* ------------------------------------------------------------
+   9. FILE UPLOADER
+   ------------------------------------------------------------ */
+
+[data-testid="stFileUploader"] {
+    padding: 12px !important;
+
+    border-radius: 18px !important;
+
+    background:
+        rgba(255, 255, 255, 0.94) !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.97) !important;
+
+    box-shadow:
+        0 12px 30px rgba(30, 41, 59, 0.12) !important;
+
+    backdrop-filter: blur(15px) !important;
+
+    -webkit-backdrop-filter: blur(15px) !important;
+}
+
+
+[data-testid="stFileUploaderDropzone"] {
+    border-radius: 14px !important;
+
+    border:
+        1px dashed rgba(79, 70, 229, 0.30) !important;
+
+    background:
+        rgba(238, 242, 255, 0.68) !important;
+}
+
+
+/* ------------------------------------------------------------
+   10. BUTTONS
+   ------------------------------------------------------------ */
+
+.stButton > button {
+    min-height: 44px !important;
+
+    padding: 0 22px !important;
+
+    border: none !important;
+
+    border-radius: 13px !important;
+
+    color: #ffffff !important;
+
+    font-weight: 750 !important;
+
+    background:
+        linear-gradient(
+            135deg,
+            #4f46e5,
+            #7c3aed
+        ) !important;
+
+    box-shadow:
+        0 8px 20px rgba(79, 70, 229, 0.25) !important;
+
+    transition:
+        transform 0.18s ease,
+        box-shadow 0.18s ease !important;
+}
+
+
+.stButton > button:hover {
+    transform: translateY(-2px) !important;
+
+    box-shadow:
+        0 13px 28px rgba(79, 70, 229, 0.34) !important;
+}
+
+
+/* ------------------------------------------------------------
+   11. METRIC CARDS
+   ------------------------------------------------------------ */
+
+[data-testid="stMetric"] {
+    padding: 18px !important;
+
+    border-radius: 18px !important;
+
+    background:
+        rgba(255, 255, 255, 0.93) !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.97) !important;
+
+    box-shadow:
+        0 12px 30px rgba(30, 41, 59, 0.10) !important;
+
+    backdrop-filter: blur(14px) !important;
+}
+
+
+[data-testid="stMetricLabel"] {
+    color: #64748b !important;
+
+    font-weight: 650 !important;
+}
+
+
+[data-testid="stMetricValue"] {
+    color: #4338ca !important;
+
+    font-weight: 850 !important;
+}
+
+
+/* ------------------------------------------------------------
+   12. RANKING CARDS
+   ------------------------------------------------------------ */
+
+.rank-card {
+    padding: 21px !important;
+
+    margin: 14px 0 !important;
+
+    border-radius: 19px !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.96) !important;
+
+    background:
+        rgba(255, 255, 255, 0.93) !important;
+
+    box-shadow:
+        0 14px 32px rgba(30, 41, 59, 0.10) !important;
+
+    backdrop-filter: blur(14px) !important;
+}
+
+
+/* ------------------------------------------------------------
+   13. DATAFRAME
+   ------------------------------------------------------------ */
+
+[data-testid="stDataFrame"] {
+    border-radius: 17px !important;
+
+    overflow: hidden !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.80) !important;
+
+    box-shadow:
+        0 12px 30px rgba(30, 41, 59, 0.10) !important;
+}
+
+
+/* ------------------------------------------------------------
+   14. EXPANDERS
+   ------------------------------------------------------------ */
+
+[data-testid="stExpander"] {
+    border-radius: 17px !important;
+
+    background:
+        rgba(255, 255, 255, 0.91) !important;
+
+    border:
+        1px solid rgba(255, 255, 255, 0.96) !important;
+
+    box-shadow:
+        0 10px 25px rgba(30, 41, 59, 0.07) !important;
+}
+
+
+/* ------------------------------------------------------------
+   15. LABELS
+   ------------------------------------------------------------ */
+
+label {
+    color: #172554 !important;
+
+    font-weight: 700 !important;
+}
+
+
+/* ------------------------------------------------------------
+   16. ALERTS
+   ------------------------------------------------------------ */
+
+[data-testid="stAlert"] {
+    border-radius: 15px !important;
+
+    box-shadow:
+        0 8px 22px rgba(30, 41, 59, 0.06) !important;
+}
+
+
+/* ------------------------------------------------------------
+   17. DOWNLOAD BUTTON
+   ------------------------------------------------------------ */
+
+.stDownloadButton > button {
+    border-radius: 12px !important;
+
+    border:
+        1px solid rgba(79, 70, 229, 0.25) !important;
+
+    background:
+        rgba(255, 255, 255, 0.92) !important;
+
+    color: #4338ca !important;
+
+    font-weight: 700 !important;
+}
+
+
+.stDownloadButton > button:hover {
+    background:
+        #eef2ff !important;
+
+    border-color:
+        #6366f1 !important;
+}
+
+
+/* ------------------------------------------------------------
+   18. DIVIDERS
+   ------------------------------------------------------------ */
+
+hr {
+    border: none !important;
+
+    height: 1px !important;
+
+    background:
+        linear-gradient(
+            90deg,
+            transparent,
+            rgba(99, 102, 241, 0.28),
+            transparent
+        ) !important;
+
+    margin: 22px 0 !important;
+}
+
+
+/* ------------------------------------------------------------
+   19. MOBILE
+   ------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+
+    .block-container {
+        padding-left: 1rem !important;
+
+        padding-right: 1rem !important;
+    }
+
+    .stTabs [data-baseweb="tab-list"] {
+        overflow-x: auto !important;
+    }
+
+    .stTabs [data-baseweb="tab"] {
+        padding: 0 12px !important;
+
+        font-size: 13px !important;
+    }
+
+    .stTabs > div:nth-child(2) {
+        padding: 10px !important;
+
+        border-radius: 18px !important;
+    }
+}
+
+
+/* ============================================================
+   SINGLE CANDIDATE TAB - SPECIFIC GLASS PANEL
+   ============================================================ */
+
+.stTabs > div:nth-child(2) > div:nth-child(1) {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 255, 255, 0.28) !important;
+    box-shadow: none !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+}
+
+
+button[kind="primary"] {
+    border-radius: 12px !important;
+}
+
+div[data-testid="stVerticalBlock"]:has(
+    div[data-testid="stHeadingWithActionElements"]
+):has(
+    [data-testid="stMetric"]
+) {
+    background: rgba(255, 255, 255, 0.85) !important;
+    border-radius: 18px !important;
+    padding: 20px !important;
 }
 
 </style>
@@ -791,7 +2382,20 @@ def readpdf(file):
 # ============================================================
 
 def llm(model):
-    """Create local Ollama chat model."""
+    """Create Gemini when configured, otherwise use local Ollama."""
+
+    import os
+
+    gemini_key = os.getenv("GEMINI_API_KEY")
+
+    if gemini_key:
+        return ChatGoogleGenerativeAI(
+            model="gemini-2.5-flash",
+            temperature=0.2,
+            max_output_tokens=450,
+            google_api_key=gemini_key
+        )
+
     return ChatOllama(
         model=model,
         temperature=0.2,
@@ -1049,8 +2653,8 @@ def rag(model, question):
         if paragraph.strip()
     ]
 
-    embeddings = OllamaEmbeddings(
-        model="nomic-embed-text"
+    embeddings = GoogleGenerativeAIEmbeddings(
+        model="gemini-embedding-001"
     )
 
     store = InMemoryVectorStore.from_texts(
@@ -1663,19 +3267,122 @@ with tabs[1]:
         """
         **Enter candidates in this format:**
 
-        Candidate A  
-        Name: Alex Johnson  
-        Education: B.Tech in Computer Science  
-        Experience: 2.5 years  
-        Skills: Python, FastAPI, SQL, Git, Docker, AWS, React  
+        Candidate A
+        Name: Alex Johnson
+        Education: B.Tech in Computer Science
+        Experience: 2.5 years
+        Skills: Python, FastAPI, SQL, Git, Docker, AWS, React
 
-        Candidate B  
-        Name: Sam Lee  
-        Education: B.Sc Computer Science  
-        Experience: 1 year  
+        Candidate B
+        Name: Sam Lee
+        Education: B.Sc Computer Science
+        Experience: 1 year
         Skills: Python, SQL, Git, JavaScript
         """
     )
+
+    # ========================================================
+    # OPTIONAL — UPLOAD UP TO 5 RESUMES
+    # ========================================================
+
+    uploaded_resumes = st.file_uploader(
+        "📄 Upload up to 5 candidate resumes (PDF)",
+        type=["pdf"],
+        accept_multiple_files=True,
+        key="ranking_resume_uploads"
+    )
+
+    if len(uploaded_resumes) > 5:
+
+        st.error(
+            "Please upload a maximum of 5 resumes."
+        )
+
+        uploaded_resumes = uploaded_resumes[:5]
+
+    # --------------------------------------------------------
+    # Convert uploaded PDFs into the EXISTING candidate format
+    # --------------------------------------------------------
+
+    uploaded_candidate_text = []
+
+    if uploaded_resumes:
+
+        for index, resume_file in enumerate(
+            uploaded_resumes,
+            start=1
+        ):
+
+            try:
+
+                resume_text = readpdf(
+                    resume_file
+                )
+
+                if not resume_text.strip():
+
+                    st.warning(
+                        f"Could not extract text from "
+                        f"{resume_file.name}."
+                    )
+
+                    continue
+
+                # --------------------------------------------
+                # IMPORTANT:
+                # Create headings that match the existing
+                # Candidate A / Candidate B parser.
+                # --------------------------------------------
+
+                candidate_label = (
+                    f"Candidate {chr(64 + index)}"
+                )
+
+                uploaded_candidate_text.append(
+                    candidate_label
+                    + "\n"
+                    + "Name: "
+                    + resume_file.name.rsplit(".", 1)[0]
+                    + "\n"
+                    + resume_text.replace(
+                        "\r\n",
+                        "\n"
+                    ).replace(
+                        "\r",
+                        "\n"
+                    ).strip()
+                )
+
+            except Exception as error:
+
+                st.warning(
+                    f"Could not read "
+                    f"{resume_file.name}: {error}"
+                )
+
+        if uploaded_candidate_text:
+
+            st.success(
+                f"Loaded "
+                f"{len(uploaded_candidate_text)} "
+                f"candidate resume(s) from PDF."
+            )
+
+            st.caption(
+                "The uploaded resumes will be analyzed "
+                "using the existing candidate ranking system."
+            )
+
+        else:
+
+            st.warning(
+                "No valid resume text was extracted "
+                "from the uploaded PDFs."
+            )
+
+    # ========================================================
+    # MANUAL CANDIDATE INPUT
+    # ========================================================
 
     candidate_blob = st.text_area(
         "Candidates",
@@ -1700,6 +3407,25 @@ Skills: Python, FastAPI, SQL, Git, Docker, AWS, Kubernetes.""",
         height=360,
         key="candidate_blob"
     )
+
+    # ========================================================
+    # IMPORTANT FIX
+    # If PDFs were uploaded, use their extracted text
+    # instead of the manual candidate text.
+    #
+    # This MUST be BEFORE the Rank Candidates button.
+    # ========================================================
+
+    if uploaded_resumes and uploaded_candidate_text:
+
+        candidate_blob = "\n\n".join(
+            uploaded_candidate_text
+        )
+
+        st.info(
+            f"Using {len(uploaded_candidate_text)} "
+            f"uploaded PDF resume(s) for ranking."
+        )
 
     # ========================================================
     # RANK CANDIDATES
@@ -1794,6 +3520,36 @@ Skills: Python, FastAPI, SQL, Git, Docker, AWS, Kubernetes.""",
                         candidate_text
                     ).strip()
 
+                    # ----------------------------------------
+                    # Extract Education
+                    # ----------------------------------------
+
+                    education_match = re.search(
+                        r"(?im)^Education\s*:\s*(.+)$",
+                        candidate_text
+                    )
+
+                    education = (
+                        education_match.group(1).strip()
+                        if education_match
+                        else "Not provided"
+                    )
+
+                    # ----------------------------------------
+                    # Extract Experience
+                    # ----------------------------------------
+
+                    experience_match = re.search(
+                        r"(?im)^Experience\s*:\s*(.+)$",
+                        candidate_text
+                    )
+
+                    experience = (
+                        experience_match.group(1).strip()
+                        if experience_match
+                        else "Not provided"
+                    )
+
                     if not candidate_resume:
 
                         continue
@@ -1808,19 +3564,36 @@ Skills: Python, FastAPI, SQL, Git, Docker, AWS, Kubernetes.""",
                         rows.append(
                             {
                                 "Candidate": candidate_name,
+
+                                "Education": education,
+
+                                "Experience": experience,
+
                                 "Score": candidate_result[
                                     "score"
                                 ],
+
+                                "Skill Score":
+                                f"{candidate_result['skill_score']}/70",
+
+                                "Experience Score":
+                                    f"{candidate_result['experience_score']}/20",
+
+                                "Education Score":
+                                    f"{candidate_result['education_score']}/10",
+
                                 "Recommendation":
                                     candidate_result[
                                         "recommendation"
                                 ],
+
                                 "Matched Skills":
                                     ", ".join(
                                         candidate_result[
                                             "matched_skills"
                                         ]
                                 ) or "None",
+
                                 "Missing Skills":
                                     ", ".join(
                                         candidate_result[
@@ -1919,7 +3692,12 @@ Skills: Python, FastAPI, SQL, Git, Docker, AWS, Kubernetes.""",
                         csv_buffer,
                         fieldnames=[
                             "Candidate",
+                            "Education",
+                            "Experience",
                             "Score",
+                            "Skill Score",
+                            "Experience Score",
+                            "Education Score",
                             "Recommendation",
                             "Matched Skills",
                             "Missing Skills"
@@ -1945,7 +3723,6 @@ Skills: Python, FastAPI, SQL, Git, Docker, AWS, Kubernetes.""",
                     st.warning(
                         "No valid candidates were found."
                     )
-
 
 # ============================================================
 # TAB 3 - RECRUITMENT AGENT
