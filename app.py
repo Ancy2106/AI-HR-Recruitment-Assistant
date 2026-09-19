@@ -2392,7 +2392,7 @@ def llm(model):
         return ChatGoogleGenerativeAI(
             model="gemini-3.6-flash",
             temperature=0.2,
-            max_output_tokens=450,
+            max_output_tokens=1000,
             google_api_key=gemini_key
         )
 
