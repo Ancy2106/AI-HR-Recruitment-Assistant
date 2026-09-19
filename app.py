@@ -2626,9 +2626,9 @@ Answer the recruiter's question directly and concisely.
             }
         )
 
-        return result[
-            "messages"
-        ][-1].content
+        return clean_ai_response(
+            result["messages"][-1]
+        )
 
     except Exception as error:
 
